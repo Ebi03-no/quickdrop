@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickDrop — بفرست، بره!</title>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<style>
+:root {
+    --bg: #0d0714;
+    --c1: #ffb347;
+    --c2: #ff5e62;
+    --c3: #c471ed;
+    --c4: #ffd166;
+    --good: #4ade80;
+    --text: #fdf8f3;
+    --dim: rgba(253, 248, 243, 0.55);
+    --glass: rgba(255, 255, 255, 0.045);
+    --border: rgba(255, 255, 255, 0.09);
+    --radius: 26px;
+    --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+html { scroll-behavior: smooth; }
+body {
+    min-height: 100vh; background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 28px 20px; overflow-x: hidden; position: relative;
+}
+body::after {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.05; pointer-events: none; z-index: 50;
+}
+.orb { position: fixed; border-radius: 50%; filter: blur(110px); z-index: 0; pointer-events: none; }
+.orb1 { width: 480px; height: 480px; background: #ff5e62; opacity: .35; top: -140px; right: -120px; animation: drift 16s ease-in-out infinite; }
+.orb2 { width: 420px; height: 420px; background: #ffb347; opacity: .28; bottom: -140px; left: -120px; animation: drift 20s ease-in-out -6s infinite reverse; }
+.orb3 { width: 320px; height: 320px; background: #c471ed; opacity: .22; top: 45%; left: 60%; animation: drift 24s ease-in-out -12s infinite; }
+@keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(-50px, 40px) scale(1.15); }
+    66% { transform: translate(40px, -50px) scale(0.9); }
+}
+.sparkle { position: fixed; color: var(--c4); z-index: 0; pointer-events: none; animation: twinkle 3s ease-in-out infinite; font-size: 14px; }
+@keyframes twinkle {
+    0%, 100% { opacity: .15; transform: scale(0.7) rotate(0deg); }
+    50% { opacity: .9; transform: scale(1.2) rotate(90deg); }
+}
+.hero { text-align: center; margin-bottom: 34px; position: relative; z-index: 1; animation: heroIn 0.8s var(--spring) both; }
+@keyframes heroIn {
+    from { opacity: 0; transform: translateY(-24px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 16px; border-radius: 99px;
+    background: rgba(255, 179, 71, 0.1); border: 1px solid rgba(255, 179, 71, 0.25);
+    color: var(--c1); font-size: 0.78rem; font-weight: 700; margin-bottom: 18px;
+}
+.badge .dot { width: 7px; height: 7px; background: var(--good); border-radius: 50%; animation: blink 1.6s ease infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+.hero h1 {
+    font-size: clamp(2.6rem, 8vw, 4.2rem); font-weight: 900; line-height: 1.25; letter-spacing: -1px;
+    background: linear-gradient(90deg, var(--c4), var(--c2), var(--c3), var(--c4));
+    background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: gradientFlow 6s linear infinite;
+}
+@keyframes gradientFlow { from { background-position: 0% 50%; } to { background-position: 300% 50%; } }
+.hero .sub { color: var(--dim); font-size: clamp(0.95rem, 2.5vw, 1.1rem); margin-top: 10px; }
+.hero .sub b { color: var(--c1); font-weight: 800; }
+.chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.chip {
+    padding: 6px 14px; border-radius: 99px;
+    background: var(--glass); border: 1px solid var(--border);
+    color: var(--dim); font-size: 0.76rem; font-weight: 600;
+    animation: heroIn 0.6s var(--spring) both;
+}
+.chip:nth-child(1) { animation-delay: .15s; }
+.chip:nth-child(2) { animation-delay: .25s; }
+.chip:nth-child(3) { animation-delay: .35s; }
+.card {
+    position: relative; z-index: 1; width: 100%; max-width: 540px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0.028));
+    border-radius: var(--radius); padding: 34px 30px;
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+    animation: cardIn 0.9s 0.2s var(--spring) both;
+}
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.card::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+    background: linear-gradient(135deg, rgba(255,179,71,.55), rgba(255,94,98,.25) 40%, rgba(196,113,237,.5) 75%, rgba(255,179,71,.3));
+    background-size: 250% 250%; animation: gradientFlow 8s linear infinite;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+}
+.card::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: radial-gradient(550px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.055), transparent 45%);
+    opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
+.card:hover::after { opacity: 1; }
+.dropzone {
+    position: relative; border: 2px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 20px; padding: 44px 22px; text-align: center; cursor: pointer;
+    transition: all 0.4s var(--spring); overflow: hidden;
+}
+.dropzone:hover, .dropzone.dragover {
+    border-color: var(--c2); background: rgba(255, 94, 98, 0.05);
+    transform: translateY(-4px); box-shadow: 0 16px 40px rgba(255, 94, 98, 0.15);
+}
+.dropzone.dragover { border-style: solid; transform: scale(1.02); }
+.dz-badge {
+    width: 78px; height: 78px; margin: 0 auto 18px; border-radius: 24px;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    display: flex; align-items: center; justify-content: center; font-size: 36px;
+    box-shadow: 0 12px 35px rgba(255, 94, 98, 0.4); transition: all 0.4s var(--spring);
+}
+.dropzone:hover .dz-badge, .dropzone.dragover .dz-badge {
+    transform: rotate(-8deg) scale(1.1);
+    box-shadow: 0 16px 45px rgba(255, 179, 71, 0.5);
+}
+.dz-title { font-size: 1.08rem; font-weight: 800; }
+.dz-title span {
+    background: linear-gradient(90deg, var(--c1), var(--c2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.dz-sub { color: var(--dim); font-size: 0.8rem; margin-top: 9px; line-height: 1.8; }
+.file-card {
+    display: none; align-items: center; gap: 14px;
+    background: var(--glass); border: 1px solid var(--border);
+    border-radius: 18px; padding: 14px 16px; margin-top: 18px;
+    animation: popIn 0.5s var(--spring) both;
+}
+.file-card.show { display: flex; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.thumb {
+    width: 58px; height: 58px; border-radius: 14px; flex-shrink: 0; overflow: hidden;
+    background: linear-gradient(135deg, rgba(255,179,71,.25), rgba(255,94,98,.25));
+    display: flex; align-items: center; justify-content: center; font-size: 27px;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+.file-meta { flex: 1; min-width: 0; }
+.file-name { font-weight: 800; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 0.78rem; color: var(--dim); margin-top: 4px; }
+.progress-area { display: none; margin-top: 22px; animation: popIn 0.4s ease both; }
+.progress-area.show { display: block; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--dim); margin-bottom: 11px; }
+#percentText {
+    font-size: 1.05rem; font-weight: 900;
+    background: linear-gradient(90deg, var(--c1), var(--c2));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.progress-track { height: 14px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; position: relative; }
+.progress-fill {
+    height: 100%; width: 0%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--c1), var(--c2), var(--c3));
+    position: relative; overflow: hidden; transition: width 0.3s ease;
+    box-shadow: 0 0 18px rgba(255, 94, 98, 0.5);
+}
+.progress-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    transform: translateX(-100%); animation: shineSweep 1.3s infinite;
+}
+@keyframes shineSweep { to { transform: translateX(100%); } }
+.btn {
+    border: none; cursor: pointer; border-radius: 15px;
+    font-family: inherit; font-weight: 800; font-size: 0.92rem;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.3s var(--spring); position: relative; overflow: hidden;
+}
+.btn:active { transform: scale(0.95); }
+.btn-primary {
+    padding: 15px 24px;
+    background: linear-gradient(135deg, var(--c1), var(--c2));
+    color: #fff; box-shadow: 0 10px 28px rgba(255, 94, 98, 0.35);
+}
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 38px rgba(255, 94, 98, 0.5); }
+.btn-primary::before {
+    content: ''; position: absolute; top: 0; left: -80%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transform: skewX(-25deg); transition: left 0.6s ease;
+}
+.btn-primary:hover::before { left: 130%; }
+.btn-ghost {
+    padding: 13px 20px;
+    background: var(--glass); border: 1px solid var(--border); color: var(--text);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+.result { display: none; margin-top: 6px; }
+.result.show { display: block; }
+.success-head { text-align: center; margin-bottom: 22px; animation: popIn 0.5s var(--spring) both; }
+.check-svg { width: 68px; height: 68px; display: block; margin: 0 auto 12px; }
+.check-svg circle { stroke: var(--good); stroke-width: 2.5; fill: rgba(74, 222, 128, 0.08); stroke-dasharray: 166; stroke-dashoffset: 166; animation: draw 0.7s ease forwards; }
+.check-svg path { stroke: var(--good); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 48; stroke-dashoffset: 48; animation: draw 0.45s 0.55s ease forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.success-head h2 { font-size: 1.25rem; font-weight: 900; }
+.success-head p { color: var(--dim); font-size: 0.84rem; margin-top: 5px; }
+.link-box { display: flex; gap: 10px; }
+.link-box input {
+    flex: 1; min-width: 0; background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border); border-radius: 15px; padding: 15px 16px;
+    color: var(--c4); font-size: 0.86rem; direction: ltr; text-align: left;
+    outline: none; transition: all 0.3s;
+}
+.link-box input:focus { border-color: var(--c2); box-shadow: 0 0 0 4px rgba(255, 94, 98, 0.12); }
+.share-row {
+    display: flex; align-items: center; gap: 16px; margin-top: 20px;
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+    border-radius: 18px; padding: 14px;
+    animation: heroIn 0.6s 0.2s both;
+}
+.qr-box {
+    width: 104px; height: 104px; border-radius: 14px;
+    background: white; padding: 7px; flex-shrink: 0; position: relative;
+}
+.qr-box::after {
+    content: 'اسکن کن ↩'; position: absolute; bottom: -24px; right: 0; left: 0;
+    text-align: center; font-size: 0.68rem; color: var(--dim);
+}
+.qr-box img { width: 100%; height: 100%; border-radius: 9px; display: block; }
+.share-btns { display: flex; flex-direction: column; gap: 9px; flex: 1; margin-bottom: 22px; }
+.share-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 15px; border-radius: 12px;
+    font-size: 0.84rem; font-weight: 700; text-decoration: none; color: var(--text);
+    background: var(--glass); border: 1px solid var(--border); transition: all 0.25s;
+}
+.share-btn:hover { transform: translateX(-5px); border-color: rgba(255, 179, 71, 0.4); background: rgba(255, 179, 71, 0.08); }
+.divider { display: flex; align-items: center; gap: 14px; margin: 24px 0 16px; color: var(--dim); font-size: 0.76rem; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.download-view, .notfound { display: none; text-align: center; }
+.download-view.show, .notfound.show { display: block; animation: cardIn 0.7s var(--spring) both; }
+.dl-icon {
+    width: 110px; height: 110px; margin: 6px auto 22px; border-radius: 30px;
+    background: linear-gradient(135deg, rgba(255,179,71,.2), rgba(255,94,98,.2), rgba(196,113,237,.2));
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 50px;
+    animation: floaty 3.5s ease-in-out infinite;
+}
+@keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.dl-name { font-size: 1.2rem; font-weight: 900; word-break: break-word; }
+.dl-size { color: var(--dim); font-size: 0.88rem; margin: 10px 0 28px; }
+.btn-download { width: 100%; padding: 18px; font-size: 1.08rem; text-decoration: none; }
+footer { position: relative; z-index: 1; text-align: center; color: var(--dim); font-size: 0.75rem; margin-top: 26px; opacity: 0.7; }
+.toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(255, 94, 98, 0.95); color: white;
+    padding: 14px 26px; border-radius: 16px;
+    font-size: 0.88rem; font-weight: 700; z-index: 200;
+    box-shadow: 0 15px 40px rgba(255, 94, 98, 0.4);
+    opacity: 0; transition: all 0.4s var(--spring);
+    max-width: 90vw; text-align: center; backdrop-filter: blur(10px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 150; }
+@media (max-width: 520px) {
+    .card { padding: 26px 20px; }
+    .share-row { flex-direction: column; }
+    .qr-box { width: 130px; }
+    .qr-box::after { bottom: -22px; }
+    .share-btns { width: 100%; margin-bottom: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<span class="sparkle" style="top:18%; right:12%">✦</span>
+<span class="sparkle" style="top:65%; right:20%; animation-delay:-1s">✦</span>
+<span class="sparkle" style="top:28%; left:14%; animation-delay:-2s">✦</span>
+<span class="sparkle" style="top:78%; left:10%; animation-delay:-0.5s">✦</span>
+<span class="sparkle" style="top:10%; left:40%; animation-delay:-1.5s">✦</span>
+
+<canvas id="confettiCanvas"></canvas>
+
+<div class="hero" id="hero">
+    <div class="badge"><span class="dot"></span> آنلاین — بدون ثبت‌نام</div>
+    <h1>فایل بفرست،<br>با یه لینک بره!</h1>
+    <p class="sub">عکس، ویدیو، هر فایلی — <b>آپلود کن، لینک بگیر، بفرست</b></p>
+    <div class="chips">
+        <span class="chip">⚡ آپلود برق‌آسا</span>
+        <span class="chip">📦 تا ۲۵ مگابایت</span>
+        <span class="chip">🔗 لینک فوری</span>
+    </div>
+</div>
+
+<div class="card" id="card">
+    <div id="uploadView">
+        <div class="dropzone" id="dropzone">
+            <div class="dz-badge">🚀</div>
+            <div class="dz-title">فایل رو بکش و <span>اینجا رها کن</span></div>
+            <div class="dz-sub">یا کلیک کن و از دستگاهت انتخابش کن</div>
+        </div>
+
+        <input type="file" id="fileInput" hidden>
+
+        <div class="file-card" id="fileCard">
+            <div class="thumb" id="fileThumb">📄</div>
+            <div class="file-meta">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+        </div>
+
+        <div class="progress-area" id="progressArea">
+            <div class="progress-header">
+                <span id="speedText">در حال پرتاب به ابر... ☁️</span>
+                <span id="percentText">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="result" id="result">
+            <div class="success-head">
+                <svg class="check-svg" viewBox="0 0 52 52">
+                    <circle cx="26" cy="26" r="24"/>
+                    <path d="M15 27l8 8 15-16"/>
+                </svg>
+                <h2>رفت بالا! 🎉</h2>
+                <p>لینکشو بفرست برای هرکی می‌خوای</p>
+            </div>
+            <div class="link-box">
+                <input type="text" id="downloadLink" readonly>
+                <button class="btn btn-primary" onclick="copyLink()" id="copyBtn">📋 کپی</button>
+            </div>
+            <div class="share-row">
+                <div class="qr-box"><img id="qrImg" alt="QR"></div>
+                <div class="share-btns">
+                    <a class="share-btn" id="tgBtn" target="_blank">✈️ بفرست تو تلگرام</a>
+                    <a class="share-btn" id="waBtn" target="_blank">💬 بفرست تو واتساپ</a>
+                </div>
+            </div>
+            <div class="divider">یا</div>
+            <button class="btn btn-ghost" style="width:100%" onclick="resetAll()">🔄 یه فایل دیگه بفرست</button>
+        </div>
+    </div>
+
+    <div class="download-view" id="downloadView">
+        <div class="dl-icon" id="dlIcon">📦</div>
+        <div class="dl-name" id="dlName"></div>
+        <div class="dl-size" id="dlSize"></div>
+        <a class="btn btn-primary btn-download" id="dlBtn" href="#">⬇️ دانلود کن!</a>
+        <div class="divider">یا</div>
+        <button class="btn btn-ghost" style="width:100%" onclick="goHome()">📤 خودمم می‌خوام فایل بفرستم</button>
+    </div>
+
+    <div class="notfound" id="notfound">
+        <div class="dl-icon">🫥</div>
+        <div class="dl-name">فایلی اینجا نیست...</div>
+        <div class="dl-size">یا لینک اشتباهه، یا فایل پرت شده 😅</div>
+        <button class="btn btn-primary btn-download" onclick="goHome()">🏠 برو صفحه اصلی</button>
+    </div>
+</div>
+
+<footer>QuickDrop ساخته شده توسط حاج امیر  Cloudflare</footer>
+<script>
+const API_URL = 'https://quickdrop-api.ebi03-no.workers.dev';
+
+const MAX_SIZE = 25 * 1024 * 1024;
+const $ = id => document.getElementById(id);
+
+const card = $('card');
+card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+});
+
+function fileIcon(name, type) {
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    if (type?.startsWith('image/') || ['png','jpg','jpeg','gif','webp','svg','bmp'].includes(ext)) return { icon: '🖼️', isImage: true };
+    if (type?.startsWith('video/') || ['mp4','mkv','avi','mov','webm'].includes(ext)) return '🎬';
+    if (type?.startsWith('audio/') || ['mp3','wav','ogg','m4a','flac'].includes(ext)) return '🎵';
+    if (ext === 'pdf') return '📕';
+    if (['zip','rar','7z','tar','gz'].includes(ext)) return '🗜️';
+    if (['doc','docx','txt','md'].includes(ext)) return '📘';
+    if (['xls','xlsx','csv'].includes(ext)) return '📊';
+    if (['js','ts','py','html','css','json'].includes(ext)) return '💻';
+    if (ext === 'apk') return '🤖';
+    return '📦';
+}
+
+function formatSize(b) {
+    if (b < 1024) return b + ' بایت';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' کیلوبایت';
+    if (b < 1073741824) return (b/1048576).toFixed(1) + ' مگابایت';
+    return (b/1073741824).toFixed(2) + ' گیگابایت';
+}
+
+const fileId = new URLSearchParams(location.search).get('f');
+if (fileId) {
+    $('hero').style.display = 'none';
+    loadDownloadPage(fileId);
+}
+
+async function loadDownloadPage(id) {
+    try {
+        const res = await fetch(`${API_URL}/info/${id}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        $('uploadView').style.display = 'none';
+        $('downloadView').classList.add('show');
+        const meta = fileIcon(data.fileName, data.contentType);
+        $('dlIcon').textContent = typeof meta === 'string' ? meta : meta.icon;
+        $('dlName').textContent = data.fileName;
+        $('dlSize').textContent = `حجم: ${formatSize(data.fileSize)}`;
+        $('dlBtn').href = `${API_URL}/download/${id}`;
+    } catch {
+        $('uploadView').style.display = 'none';
+        $('notfound').classList.add('show');
+    }
+}
+
+function goHome() { location.href = location.pathname; }
+
+const dropzone = $('dropzone');
+const fileInput = $('fileInput');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) selectFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) selectFile(fileInput.files[0]);
+});
+
+function selectFile(file) {
+    if (file.size > MAX_SIZE) {
+        showToast('ای بابا! فایله از ۲۵ مگ ردیده 😵');
+        return;
+    }
+    const meta = fileIcon(file.name, file.type);
+    const thumb = $('fileThumb');
+    if (typeof meta === 'object' && meta.isImage) {
+        thumb.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        thumb.appendChild(img);
+    } else {
+        thumb.textContent = typeof meta === 'string' ? meta : meta.icon;
+    }
+    $('fileName').textContent = file.name;
+    $('fileSize').textContent = formatSize(file.size);
+    $('fileCard').classList.add('show');
+    dropzone.style.display = 'none';
+    uploadFile(file);
+}
+
+function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    $('progressArea').classList.add('show');
+
+    const xhr = new XMLHttpRequest();
+    const jokes = ['در حال پرتاب به ابر... ☁️', 'فایله داره اسب‌سواری می‌کنه 🏇', 'نزدیک اتمامه، یه کم صبر... ⏳'];
+
+    xhr.upload.addEventListener('progress', e => {
+        if (!e.lengthComputable) return;
+        const percent = Math.round((e.loaded / e.total) * 100);
+        $('progressFill').style.width = percent + '%';
+        $('percentText').textContent = percent + '%';
+        $('speedText').textContent = percent < 30 ? jokes[0] : percent < 80 ? jokes[1] : jokes[2];
+        if (percent === 100) $('speedText').textContent = 'تموم شد تقریباً! 🏁';
+    });
+
+    xhr.addEventListener('load', () => {
+        try {
+            const res = JSON.parse(xhr.responseText);
+            if (res.success) { showResult(res.fileId); confetti(); }
+            else showToast('خطا: ' + (res.error || 'نامشخص'));
+        } catch { showToast('پاسخ سرور عجیب بود 🤔'); }
+        $('progressArea').classList.remove('show');
+    });
+
+    xhr.addEventListener('error', () => {
+        showToast('اینترنت قطع شد رفیق! 📡');
+        $('progressArea').classList.remove('show');
+    });
+
+    xhr.open('POST', `${API_URL}/upload`);
+    xhr.send(formData);
+}
+
+function showResult(fid) {
+    const shareUrl = `${location.origin}${location.pathname}?f=${fid}`;
+    $('downloadLink').value = shareUrl;
+    $('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(shareUrl)}`;
+    $('tgBtn').href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`;
+    $('waBtn').href = `https://wa.me/?text=${encodeURIComponent('این فایل رو دانلود کن 👇 ' + shareUrl)}`;
+    $('result').classList.add('show');
+    $('fileCard').style.display = 'none';
+}
+
+function copyLink() {
+    navigator.clipboard.writeText($('downloadLink').value).then(() => {
+        const btn = $('copyBtn');
+        btn.textContent = '✅ شد!';
+        setTimeout(() => btn.textContent = '📋 کپی', 2000);
+    });
+}
+
+function resetAll() {
+    $('result').classList.remove('show');
+    $('fileCard').classList.remove('show');
+    $('fileCard').style.display = '';
+    dropzone.style.display = 'block';
+    fileInput.value = '';
+}
+
+let toastTimer;
+function showToast(msg) {
+    let t = document.querySelector('.toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.className = 'toast';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    requestAnimationFrame(() => t.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function confetti() {
+    const canvas = $('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    const colors = ['#ffb347', '#ff5e62', '#c471ed', '#ffd166', '#ef476f', '#ffffff'];
+    const pieces = Array.from({ length: 170 }, () => ({
+        x: canvas.width / 2, y: canvas.height / 2.4,
+        vx: (Math.random() - 0.5) * 19, vy: Math.random() * -17 - 5,
+        w: Math.random() * 10 + 4, h: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.35,
+        life: 110 + Math.random() * 50,
+    }));
+    (function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        for (const p of pieces) {
+            if (p.life <= 0) continue;
+            alive = true;
+            p.vy += 0.35; p.x += p.vx; p.y += p.vy;
+            p.vx *= 0.99; p.rot += p.vr; p.life--;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.globalAlpha = Math.min(1, p.life / 40);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+        }
+        if (alive) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    })();
+}
+</script>
+</body>
+</html>
